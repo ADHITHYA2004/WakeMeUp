@@ -1,0 +1,47 @@
+name: wakemeup_travel_alarm
+description: A mobile app that wakes up passengers before they reach their destination using GPS-based distance alerts.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Icons
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+
+  # Maps & Location
+  google_maps_flutter: ^2.5.0
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
+  # Notifications & Background
+  flutter_local_notifications: ^16.3.0
+  flutter_background_service: ^5.0.5
+  workmanager: ^0.5.2
+
+  # Storage
+  sqflite: ^2.3.0
+  path_provider: ^2.1.1
+  path: ^1.8.3
+
+  # State Management
+  provider: ^6.1.1
+
+  # Utilities
+  shared_preferences: ^2.2.2
+  vibration: ^1.8.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
