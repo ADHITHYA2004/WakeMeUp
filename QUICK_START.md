@@ -119,3 +119,4 @@ If you can't run Flutter right now, you can explore the UI code:
 - **Settings**: `lib/screens/settings_screen.dart`
 
 Each file has detailed comments explaining the UI components!
+

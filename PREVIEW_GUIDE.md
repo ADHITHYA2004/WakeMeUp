@@ -141,3 +141,4 @@ For a full preview with all features working:
 - Google Maps API key is required (free tier available)
 - Location permissions must be granted
 - Device/emulator must support location services
+
