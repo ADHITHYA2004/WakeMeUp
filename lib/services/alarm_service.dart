@@ -5,7 +5,9 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import '../models/destination.dart';
 import '../models/alarm_state.dart';
+import '../models/alarm_sound.dart';
 import 'location_service.dart';
+import 'sound_service.dart';
 
 /// Service to manage alarm functionality (notifications, vibration, tracking)
 class AlarmService {
@@ -77,8 +79,9 @@ class AlarmService {
   Future<void> startAlarm(
     Destination destination,
     double alertDistance,
-    Function(AlarmState) onUpdate,
-  ) async {
+    Function(AlarmState) onUpdate, {
+    AlarmSound? alarmSound,
+  }) async {
     // Stop any existing alarm first
     await stopAlarm();
     
@@ -87,6 +90,7 @@ class AlarmService {
       alertDistance: alertDistance,
       isActive: true,
       startedAt: DateTime.now(),
+      alarmSound: alarmSound,
     );
     _onAlarmUpdate = onUpdate;
 
@@ -131,6 +135,15 @@ class AlarmService {
     // Cancel alarm to prevent multiple triggers
     _currentAlarm = _currentAlarm!.copyWith(isActive: false);
 
+    // Play selected alarm sound
+    if (_currentAlarm!.alarmSound != null) {
+      try {
+        await SoundService.instance.playAlarmSound(_currentAlarm!.alarmSound!);
+      } catch (e) {
+        debugPrint('Error playing alarm sound: $e');
+      }
+    }
+
     if (!kIsWeb) {
       // Vibrate (not available on web)
       try {
@@ -154,13 +167,13 @@ class AlarmService {
               channelDescription: 'Notifications for destination alarms',
               importance: Importance.high,
               priority: Priority.high,
-              playSound: true,
+              playSound: false, // We're playing sound separately
               enableVibration: true,
             ),
             iOS: DarwinNotificationDetails(
               presentAlert: true,
               presentBadge: true,
-              presentSound: true,
+              presentSound: false, // We're playing sound separately
             ),
           ),
         );
@@ -179,6 +192,9 @@ class AlarmService {
 
   /// Stop the alarm and cancel tracking
   Future<void> stopAlarm() async {
+    // Stop any playing alarm sound
+    await SoundService.instance.stopAlarmSound();
+    
     await _positionSubscription?.cancel();
     _positionSubscription = null;
     _currentAlarm = null;

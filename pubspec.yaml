@@ -37,6 +37,11 @@ dependencies:
   # Utilities
   shared_preferences: ^2.2.2
   vibration: ^1.8.4
+  http: ^1.2.2
+
+  # Audio
+  audioplayers: ^5.2.1
+  file_picker: ^6.1.1
 
 dev_dependencies:
   flutter_test:
@@ -45,3 +50,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/sounds/

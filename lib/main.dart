@@ -9,12 +9,17 @@ import 'screens/settings_screen.dart';
 import 'services/theme_service.dart';
 import 'services/database_service.dart';
 import 'services/alarm_service.dart';
+import 'services/auth_service.dart';
+import 'screens/login_screen.dart';
+import 'screens/signup_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize services (handle errors gracefully for web)
   try {
+    // Use remote MySQL API
+    DatabaseService.instance.useRemote = true;
     await DatabaseService.instance.initDatabase();
   } catch (e) {
     // Database initialization failed (e.g., on web), continue anyway
@@ -46,9 +51,11 @@ class WakeMeUpApp extends StatelessWidget {
             theme: _buildLightTheme(),
             darkTheme: _buildDarkTheme(),
             themeMode: themeService.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-            home: const HomeScreen(),
+            home: const _AuthGate(),
             routes: {
               '/home': (context) => const HomeScreen(),
+              '/login': (context) => const LoginScreen(),
+              '/signup': (context) => const SignupScreen(),
               '/map': (context) => const MapScreen(),
               '/set-alarm': (context) => const SetAlarmScreen(),
               '/active-alarm': (context) => const ActiveAlarmScreen(),
@@ -181,6 +188,38 @@ class WakeMeUpApp extends StatelessWidget {
           color: Colors.white,
         ),
       ),
+    );
+  }
+}
+
+class _AuthGate extends StatefulWidget {
+  const _AuthGate();
+  @override
+  State<_AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<_AuthGate> {
+  Future<bool> _checkAuth() async {
+    final token = await AuthService.instance.getToken();
+    return token != null && token.isNotEmpty;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _checkAuth(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.data == true) {
+          return const HomeScreen();
+        } else {
+          return const LoginScreen();
+        }
+      },
     );
   }
 }

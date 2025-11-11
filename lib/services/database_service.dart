@@ -1,9 +1,10 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/destination.dart';
+import 'remote_database_service.dart';
 
 /// Service to manage SQLite database for storing destinations
 /// Uses SQLite on mobile, SharedPreferences on web
@@ -11,6 +12,8 @@ class DatabaseService {
   static final DatabaseService instance = DatabaseService._init();
   static Database? _database;
   static const String _prefsKey = 'wakemeup_destinations';
+  // Toggle to use remote API instead of local DB
+  bool useRemote = false;
 
   DatabaseService._init();
 
@@ -61,6 +64,10 @@ class DatabaseService {
 
   /// Insert a new destination
   Future<int> insertDestination(Destination destination) async {
+    if (useRemote) {
+      final id = await RemoteDatabaseService.instance.insertDestination(destination);
+      return id;
+    }
     if (isWeb) {
       // Use SharedPreferences for web
       final prefs = await SharedPreferences.getInstance();
@@ -80,6 +87,9 @@ class DatabaseService {
 
   /// Get all destinations, ordered by creation date (newest first)
   Future<List<Destination>> getAllDestinations() async {
+    if (useRemote) {
+      return await RemoteDatabaseService.instance.getAllDestinations();
+    }
     if (isWeb) {
       return await _getDestinationsFromPrefs();
     } else {
@@ -115,6 +125,10 @@ class DatabaseService {
 
   /// Delete a destination by ID
   Future<int> deleteDestination(int id) async {
+    if (useRemote) {
+      final ok = await RemoteDatabaseService.instance.deleteDestination(id);
+      return ok ? 1 : 0;
+    }
     if (isWeb) {
       final destinations = await _getDestinationsFromPrefs();
       destinations.removeWhere((d) => d.id == id);

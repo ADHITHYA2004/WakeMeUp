@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
 import '../services/database_service.dart';
 import '../models/destination.dart';
+import '../services/auth_service.dart';
 
 /// Settings screen with dark mode toggle and destination history
 class SettingsScreen extends StatefulWidget {
@@ -125,6 +126,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.all(20.0),
           children: [
+            // Profile
+            FutureBuilder<Map<String, dynamic>?>(
+              future: AuthService.instance.getProfile(),
+              builder: (context, snapshot) {
+                final isLoading = snapshot.connectionState == ConnectionState.waiting;
+                final profile = snapshot.data;
+                return Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+                        blurRadius: 20,
+                        spreadRadius: 0,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    leading: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                    title: Text(
+                      'Profile',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    subtitle: isLoading
+                        ? const Text('Loading...')
+                        : Text(profile != null ? (profile['email'] ?? '') : 'Not signed in'),
+                    trailing: ElevatedButton.icon(
+                      onPressed: () async {
+                        await AuthService.instance.logout();
+                        if (!context.mounted) return;
+                        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                      },
+                      icon: const Icon(Icons.logout_rounded),
+                      label: const Text('Logout'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 24),
             // Dark Mode Toggle
             Container(
               decoration: BoxDecoration(
